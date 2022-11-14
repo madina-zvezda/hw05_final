@@ -360,7 +360,7 @@ class FollowTest(TestCase):
                         user=FollowTest.user,
                         author=FollowTest.author).exists())
         self.assertRedirects(response, url_redirect)
-        self.assertEqual(count+ 1, new_count)
+        self.assertEqual(count + 1, new_count)
 
     def test_user_unfollower_authors(self):
         '''Посты не доступны пользователю, который не подписался на автора.'''

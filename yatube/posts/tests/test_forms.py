@@ -13,6 +13,7 @@ User = get_user_model()
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostFormTest(TestCase):
     @classmethod
@@ -44,7 +45,7 @@ class PostFormTest(TestCase):
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
 
-        small_gif = (       
+        small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
@@ -143,8 +144,8 @@ class CommentFormTest(TestCase):
             author=cls.user
         )
         cls.comment = Comment.objects.create(post_id=cls.post.id,
-                                              author=cls.user,
-                                              text='Тестовый коммент')
+                                             author=cls.user,
+                                             text='Тестовый коммент')
 
     @classmethod
     def setUp(self):
