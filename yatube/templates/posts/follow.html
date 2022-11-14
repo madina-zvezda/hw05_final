@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{%block title%}
+Посты пользователя
+{%endblock%}
+{% block content %} 
+  <div class="container py-5">
+    {% include 'includes/switcher.html' with follow=True %}
+      {% for post in page_obj %}
+        {% include 'posts/group-article.html' with profile_link_flag=True author_link=True %}
+      {% endfor %}
+      {% include 'includes/paginator.html' %}
+  </div>
+{%endblock %}

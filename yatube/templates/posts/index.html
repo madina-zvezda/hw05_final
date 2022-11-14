@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{%block title%}
+  Yatube
+{%endblock%}
+{% block content %} 
+  <div class="container py-5">
+    <h1> Последние обновления на сайте </h1>
+      {% for post in page_obj %}
+        {% include 'posts/group-article.html' with profile_link_flag=True author_link=True %}
+      {% endfor %}
+      {% include 'includes/paginator.html' %}
+  </div>
+{%endblock %}
