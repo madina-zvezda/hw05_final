@@ -354,7 +354,7 @@ class FollowTest(TestCase):
         count_follow = Follow.objects.count()
         self.follower_client.post(
             reverse('posts:profile_follow',
-                kwargs={'username': self.post_follower}))
+                    kwargs={'username': self.post_follower}))
         follow = Follow.objects.all().latest('id')
         self.assertEqual(Follow.objects.count(), count_follow + 1)
         self.assertEqual(follow.author_id, self.post_follower.id)
@@ -368,7 +368,7 @@ class FollowTest(TestCase):
         count_follow = Follow.objects.count()
         self.follower_client.post(
             reverse('posts:profile_unfollow',
-                kwargs={'username': self.post_follower}))
+                    kwargs={'username': self.post_follower}))
         self.assertEqual(Follow.objects.count(), count_follow - 1)
 
     def test_follow_on_authors(self):
