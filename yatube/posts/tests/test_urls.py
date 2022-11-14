@@ -103,19 +103,3 @@ class PostsURLTest(TestCase):
         self.assertEqual(response.status_code,
                          HTTPStatus.NOT_FOUND)
         self.assertTemplateUsed(response, 'core/404.html')
-
-    def test_403(self):
-        """Страница 403 отдаёт кастомный шаблон."""
-        response = self.guest_client.get('/test-not',
-                                         follow=True)
-        self.assertEqual(response.status_code,
-                         HTTPStatus.FORBIDDEN)
-        self.assertTemplateUsed(response, 'core/403.html')
-
-    def test_500(self):
-        """Страница 500 отдаёт кастомный шаблон."""
-        response = self.guest_client.get('/test-not',
-                                         follow=True)
-        self.assertEqual(response.status_code,
-                         HTTPStatus.INTERNAL_SERVER_ERROR)
-        self.assertTemplateUsed(response, 'core/500.html')
