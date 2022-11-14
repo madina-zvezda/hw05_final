@@ -331,78 +331,63 @@ class FollowTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth1')
-        cls.user2 = User.objects.create_user(username='auth2')
-        cls.author = User.objects.create_user(username='someauthor')
+        cls.post_autor = User.objects.create(
+            username='post_autor',
+        )
+        cls.post_follower = User.objects.create(
+            username='post_follower',
+        )
+        cls.post = Post.objects.create(
+            text='Подпишись на меня',
+            author=cls.post_autor,
+        )
 
     def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
-        self.authorized_client2 = Client()
-        self.authorized_client2.force_login(self.user2)
+        cache.clear()
+        self.author_client = Client()
+        self.author_client.force_login(self.post_follower)
+        self.follower_client = Client()
+        self.follower_client.force_login(self.post_autor)
 
-    def test_user_follower_authors(self):
-        '''Посты доступны пользователю, который подписался на автора.'''
-        count = Follow.objects.filter(user=FollowTest.user).count()
-        data = {'user': FollowTest.user,
-                'author': FollowTest.author}
-        url_redirect = reverse(
-            'posts:profile',
-            kwargs={'username': FollowTest.author.username})
-        response = self.authorized_client.post(
-            reverse('posts:profile_follow', kwargs={
-                'username': FollowTest.author.username}),
-            data=data, follow=True)
-        new_count = Follow.objects.filter(
-            user=FollowTest.user).count()
-        self.assertTrue(Follow.objects.filter(
-                        user=FollowTest.user,
-                        author=FollowTest.author).exists())
-        self.assertRedirects(response, url_redirect)
-        self.assertEqual(count + 1, new_count)
+    def test_follow_on_user(self):
+        """Проверка подписки на пользователя."""
+        count_follow = Follow.objects.count()
+        self.follower_client.post(
+            reverse('posts:profile_follow',
+                kwargs={'username': self.post_follower}))
+        follow = Follow.objects.all().latest('id')
+        self.assertEqual(Follow.objects.count(), count_follow + 1)
+        self.assertEqual(follow.author_id, self.post_follower.id)
+        self.assertEqual(follow.user_id, self.post_autor.id)
 
-    def test_user_unfollower_authors(self):
-        '''Посты не доступны пользователю, который не подписался на автора.'''
-        count = Follow.objects.filter(
-            user=FollowTest.user).count()
-        data = {'user': FollowTest.user,
-                'author': FollowTest.author}
-        url_redirect = ('/auth/login/?next=/profile/'
-                        f'{self.author.username}/unfollow/')
-        response = self.guest_client.post(
-            reverse('posts:profile_unfollow', kwargs={
-                    'username': FollowTest.author}),
-            data=data, follow=True)
-        new_count = Follow.objects.filter(
-            user=FollowTest.user).count()
-        self.assertFalse(Follow.objects.filter(
-            user=FollowTest.user,
-            author=FollowTest.author).exists())
-        self.assertRedirects(response, url_redirect)
-        self.assertEqual(count, new_count)
+    def test_unfollow_on_user(self):
+        """Проверка отписки от пользователя."""
+        Follow.objects.create(
+            user=self.post_autor,
+            author=self.post_follower)
+        count_follow = Follow.objects.count()
+        self.follower_client.post(
+            reverse('posts:profile_unfollow',
+                kwargs={'username': self.post_follower}))
+        self.assertEqual(Follow.objects.count(), count_follow - 1)
 
-    def test_follower_see_new_post(self):
-        '''У подписчика появляется новый пост избранного автора.
-           А у не подписчика его нет'''
-        new_post_follower = Post.objects.create(
-            author=FollowTest.author,
-            text='Тестовый текст')
-        Follow.objects.create(user=FollowTest.user,
-                              author=FollowTest.author)
-        response_follower = self.authorized_client.get(
+    def test_follow_on_authors(self):
+        """Проверка записей у тех кто подписан."""
+        post = Post.objects.create(
+            author=self.post_autor,
+            text="Подпишись на меня")
+        Follow.objects.create(
+            user=self.post_follower,
+            author=self.post_autor)
+        response = self.author_client.get(
             reverse('posts:follow_index'))
-        new_posts = response_follower.context['page_obj']
-        self.assertIn(new_post_follower, new_posts)
+        self.assertIn(post, response.context['page_obj'].object_list)
 
-    def test_unfollower_no_see_new_post(self):
-        '''У не подписчика поста нет'''
-        new_post_follower = Post.objects.create(
-            author=FollowTest.author,
-            text='Текстовый текст')
-        Follow.objects.create(user=FollowTest.user,
-                              author=FollowTest.author)
-        response_unfollower = self.authorized_client2.get(
+    def test_notfollow_on_authors(self):
+        """Проверка записей у тех кто не подписан."""
+        post = Post.objects.create(
+            author=self.post_autor,
+            text="Подпишись на меня")
+        response = self.author_client.get(
             reverse('posts:follow_index'))
-        new_post_unfollower = response_unfollower.context['page_obj']
-        self.assertNotIn(new_post_follower, new_post_unfollower)
+        self.assertNotIn(post, response.context['page_obj'].object_list)
