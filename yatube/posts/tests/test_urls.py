@@ -101,7 +101,7 @@ class PostsURLTest(TestCase):
         response = self.guest_client.get('/test-not',
                                          follow=True)
         self.assertEqual(response.status_code,
-                          HTTPStatus.NOT_FOUND)
+                         HTTPStatus.NOT_FOUND)
         self.assertTemplateUsed(response, 'core/404.html')
 
     def test_403(self):
@@ -109,7 +109,7 @@ class PostsURLTest(TestCase):
         response = self.guest_client.get('/test-not',
                                          follow=True)
         self.assertEqual(response.status_code,
-                          HTTPStatus.FORBIDDEN)
+                         HTTPStatus.FORBIDDEN)
         self.assertTemplateUsed(response, 'core/403.html')
 
     def test_500(self):
@@ -117,5 +117,5 @@ class PostsURLTest(TestCase):
         response = self.guest_client.get('/test-not',
                                          follow=True)
         self.assertEqual(response.status_code,
-                          HTTPStatus.INTERNAL_SERVER_ERROR)
+                         HTTPStatus.INTERNAL_SERVER_ERROR)
         self.assertTemplateUsed(response, 'core/500.html')
