@@ -122,4 +122,4 @@ CACHES = {
     }
 }
 
-upload_to ='posts/'
+upload_to = 'posts/'
