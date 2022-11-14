@@ -1,5 +1,3 @@
-from email.mime import image
-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
@@ -53,7 +51,7 @@ def post_detail(request, post_id):
     context = {'post': post,
                'form': form,
                'comments': comments,
-               'post_id': post_id,}
+               'post_id': post_id, }
     return render(request, 'posts/post_detail.html', context)
 
 
@@ -88,9 +86,10 @@ def post_edit(request, post_id):
     context = {'form': form, 'is_edit': True}
     return render(request, "posts/post_create.html", context)
 
+
 @login_required
 def add_comment(request, post_id):
-    post = get_object_or_404(Post, id=post_id) 
+    post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -99,13 +98,15 @@ def add_comment(request, post_id):
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
 
+
 @login_required
 def follow_index(request):
     post_list = Post.objects.filter(
         author__following__user=request.user)
     pages = pagination(request, post_list)
-    context = {'page_obj': pages,}
+    context = {'page_obj': pages, }
     return render(request, 'posts/follow.html', context)
+
 
 @login_required
 def profile_follow(request, username):
@@ -114,6 +115,7 @@ def profile_follow(request, username):
     if author != user:
         Follow.objects.get_or_create(user=user, author=author)
     return redirect("posts:profile", username=username)
+
 
 @login_required
 def profile_unfollow(request, username):

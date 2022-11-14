@@ -8,6 +8,5 @@ class CreatedModel(models.Model):
         auto_now_add=True
     )
 
-
     class Meta:
-        abstract = True 
+        abstract = True

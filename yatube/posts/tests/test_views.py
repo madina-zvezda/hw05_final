@@ -69,7 +69,6 @@ class PostViewTest(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
@@ -220,7 +219,8 @@ class PostViewTest(TestCase):
             author=self.user,
             text='Проверка кэша',
             group=self.group)
-        after_creating_post = self.authorized_client.get(reverse('posts:index'))
+        after_creating_post = self.authorized_client.get(
+            reverse('posts:index'))
         item_after = after_creating_post.content
         self.assertEqual(item_after, first_item)
         cache.clear()
@@ -288,10 +288,10 @@ class CommentTest(TestCase):
         cls.user = User.objects.create_user(username='auth1')
         cls.user2 = User.objects.create_user(username='auth2')
         cls.group = Group.objects.create(title='Тестовая группа',
-                                          slug='test_group')
+                                         slug='test_group')
         cls.post = Post.objects.create(text='Тестовый текст',
-                                        group=cls.group,
-                                        author=cls.user)
+                                       group=cls.group,
+                                       author=cls.user)
 
     def setUp(self):
         self.guest_client = Client()
