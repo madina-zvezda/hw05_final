@@ -167,9 +167,8 @@ class CommentFormTest(TestCase):
                      'text': 'Тестовый коммент2'}
 
         response = self.authorized_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.id}),
-                    data=form_data, follow=True)
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
+            data=form_data, follow=True)
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTrue(Comment.objects.filter(text='Тестовый коммент2',
@@ -194,9 +193,8 @@ class CommentFormTest(TestCase):
         form_data = {'text': ''}
 
         response = self.authorized_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.id}),
-                    data=form_data, follow=True)
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
+            data=form_data, follow=True)
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(Comment.objects.count(), comment_count)

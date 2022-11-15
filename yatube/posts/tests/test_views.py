@@ -15,6 +15,7 @@ User = get_user_model()
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostViewTest(TestCase):
     @classmethod
@@ -62,8 +63,8 @@ class PostViewTest(TestCase):
             b'\x0A\x00\x3B'
         )
         cls.uploaded = SimpleUploadedFile(name='small.gif',
-                                           content=cls.small_gif,
-                                           content_type='image/gif')
+                                          content=cls.small_gif,
+                                          content_type='image/gif')
 
     def setUp(self):
         self.guest_client = Client()

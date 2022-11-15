@@ -48,8 +48,8 @@ class PostsURLTest(TestCase):
             b'\x0A\x00\x3B'
         )
         cls.uploaded = SimpleUploadedFile(name='small.gif',
-                                           content=cls.small_gif,
-                                           content_type='image/gif')
+                                          content=cls.small_gif,
+                                          content_type='image/gif')
 
     def setUp(self):
         self.guest_client = Client()
