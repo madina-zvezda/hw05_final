@@ -12,7 +12,7 @@ class Group(models.Model):
     class Meta:
         verbose_name = 'Группа'
         verbose_name_plural = 'Группы'
-        ordering = ['title']
+        ordering = ('title',)
 
     def __str__(self) -> str:
         return self.title
@@ -68,7 +68,7 @@ class Comment(models.Model):
     created = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
-        verbose_name = 'comments'
+        verbose_name = 'комментарии'
         verbose_name_plural = 'комментарий'
         ordering = ('-created',)
 
@@ -80,10 +80,17 @@ class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower'
+        related_name='follower',
+        verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='following'
+        related_name='following',
+        verbose_name='Подписка'
     )
+
+    class Meta:
+        constraints = [
+        models.UniqueConstraint(fields=['user', 'author'], name='unique appversion')
+    ]

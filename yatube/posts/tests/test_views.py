@@ -7,15 +7,15 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Comment, Group, Post, Follow
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
-
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostViewTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -53,8 +53,7 @@ class PostViewTest(TestCase):
         cls.post_edit = 'posts:post_edit'
         cls.post_create = 'posts:post_create'
 
-    def setUp(self):
-        self.small_gif = (
+        cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
@@ -62,9 +61,11 @@ class PostViewTest(TestCase):
             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
             b'\x0A\x00\x3B'
         )
-        self.uploaded = SimpleUploadedFile(name='small.gif',
-                                           content=self.small_gif,
+        cls.uploaded = SimpleUploadedFile(name='small.gif',
+                                           content=cls.small_gif,
                                            content_type='image/gif')
+
+    def setUp(self):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -253,6 +254,9 @@ class PaginatorViewTest(TestCase):
             ]
         )
 
+    def tearDown(self) -> None:
+        cache.clear()
+
     def test_second_page_contains_three_records(self):
         """На второй странице должно быть три поста."""
 
@@ -286,7 +290,8 @@ class CommentTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth1')
-        cls.user2 = User.objects.create_user(username='auth2')
+        cls.not_author = User.objects.create_user(
+            username='not_author')
         cls.group = Group.objects.create(title='Тестовая группа',
                                          slug='test_group')
         cls.post = Post.objects.create(text='Тестовый текст',
@@ -297,6 +302,9 @@ class CommentTest(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
+
+    def tearDown(self) -> None:
         cache.clear()
 
     def test_comment_authorized_client(self):
@@ -349,6 +357,9 @@ class FollowTest(TestCase):
         self.follower_client = Client()
         self.follower_client.force_login(self.post_autor)
 
+    def tearDown(self) -> None:
+        cache.clear()
+
     def test_follow_on_user(self):
         """Проверка подписки на пользователя."""
         count_follow = Follow.objects.count()
@@ -357,19 +368,23 @@ class FollowTest(TestCase):
                     kwargs={'username': self.post_follower}))
         follow = Follow.objects.all().latest('id')
         self.assertEqual(Follow.objects.count(), count_follow + 1)
-        self.assertEqual(follow.author_id, self.post_follower.id)
-        self.assertEqual(follow.user_id, self.post_autor.id)
+        self.assertTrue(
+            Follow.objects.filter(
+                author=follow.author_id,
+                user=follow.user_id).exists()
+        )
 
     def test_unfollow_on_user(self):
         """Проверка отписки от пользователя."""
         Follow.objects.create(
             user=self.post_autor,
             author=self.post_follower)
-        count_follow = Follow.objects.count()
+
         self.follower_client.post(
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.post_follower}))
-        self.assertEqual(Follow.objects.count(), count_follow - 1)
+
+        self.assertFalse(Follow.objects.all().exists())
 
     def test_follow_on_authors(self):
         """Проверка записей у тех кто подписан."""

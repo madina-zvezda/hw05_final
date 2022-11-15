@@ -4,10 +4,11 @@ from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Group, Post, Comment
+from posts.models import Comment, Group, Post
 
 User = get_user_model()
 
@@ -41,6 +42,9 @@ class PostFormTest(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+
+    def tearDown(self) -> None:
+        cache.clear()
 
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
@@ -153,45 +157,46 @@ class CommentFormTest(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
+    def tearDown(self) -> None:
+        cache.clear()
+
     def test_create_comment(self):
-        '''Проверка создания комментария'''
+        """Проверка создания комментария."""
         comment_count = Comment.objects.count()
         form_data = {'post_id': self.post.id,
                      'text': 'Тестовый коммент2'}
+
         response = self.authorized_client.post(
             reverse('posts:add_comment',
                     kwargs={'post_id': self.post.id}),
-            data=form_data, follow=True)
+                    data=form_data, follow=True)
+
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertTrue(Comment.objects.filter(
-                        text='Тестовый коммент2',
-                        post=self.post.id,
-                        author=self.user
-                        ).exists())
-        self.assertEqual(Comment.objects.count(),
-                         comment_count + 1)
+        self.assertTrue(Comment.objects.filter(text='Тестовый коммент2',
+                        post=self.post.id, author=self.user).exists())
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
 
     def test_no_edit_comment(self):
-        '''Проверка запрета комментирования не авторизованого пользователя'''
-        posts_count = Comment.objects.count()
+        """Проверка запрета комментирования не авторизованого пользователя."""
+        comment_count = Comment.objects.count()
         form_data = {'text': 'Тестовый коммент2'}
+
         response = self.guest_client.post(reverse('posts:add_comment',
                                           kwargs={'post_id': self.post.id}),
-                                          data=form_data,
-                                          follow=True)
+                                          data=form_data, follow=True)
+
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertNotEqual(Comment.objects.count(),
-                            posts_count + 1)
+        self.assertEqual(Comment.objects.count(), comment_count)
 
     def test_comment_null(self):
-        '''Запрет пустого комментария'''
-        posts_count = Comment.objects.count()
+        """Запрет пустого комментария."""
+        comment_count = Comment.objects.count()
         form_data = {'text': ''}
+
         response = self.authorized_client.post(
             reverse('posts:add_comment',
                     kwargs={'post_id': self.post.id}),
-            data=form_data,
-            follow=True)
+                    data=form_data, follow=True)
+
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertNotEqual(Comment.objects.count(),
-                            posts_count + 1)
+        self.assertEqual(Comment.objects.count(), comment_count)

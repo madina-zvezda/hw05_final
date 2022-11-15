@@ -24,10 +24,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'posts',
     'users',
     'core',
     'about',
+
     'sorl.thumbnail',
 ]
 
@@ -121,5 +123,3 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
-
-upload_to = 'posts/'
