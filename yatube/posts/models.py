@@ -68,8 +68,8 @@ class Comment(models.Model):
     created = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
-        verbose_name = 'комментарии'
-        verbose_name_plural = 'комментарий'
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'комментарии'
         ordering = ('-created',)
 
     def __str__(self) -> str:
@@ -92,5 +92,5 @@ class Follow(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(
-            fields=['user', 'author'], name='unique appversion')
+            fields=('user', 'author',), name='unique_appversion')
         ]
