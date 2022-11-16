@@ -370,7 +370,7 @@ class FollowTest(TestCase):
                     kwargs={'username': self.post_follower}))
 
         follow = Follow.objects.all().latest('id')
-        
+
         self.assertEqual(Follow.objects.count(), count_follow + 1)
         self.assertTrue(
             Follow.objects.filter(
